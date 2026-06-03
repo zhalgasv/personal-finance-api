@@ -17,7 +17,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public String register(AuthRequest authRequest) {
-        if(userRepository.existByUsername(authRequest.getUsername())) {
+        if(userRepository.existsByUsername(authRequest.getUsername())) {
             throw new RuntimeException("Username is already in use");
         }
         if(userRepository.existsByEmail(authRequest.getEmail())) {

@@ -2,12 +2,11 @@ package com.zhalgas.personalfinanceapi.auth;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/path")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
