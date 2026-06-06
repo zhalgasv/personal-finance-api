@@ -1,6 +1,7 @@
 package com.zhalgas.personalfinanceapi.auth;
 
 
+import com.zhalgas.personalfinanceapi.exception.UserAlreadyExistsException;
 import com.zhalgas.personalfinanceapi.user.User;
 import com.zhalgas.personalfinanceapi.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,10 @@ public class AuthService {
 
     public String register(AuthRequest authRequest) {
         if(userRepository.existsByUsername(authRequest.getUsername())) {
-            throw new RuntimeException("Username is already in use");
+            throw new UserAlreadyExistsException("Username is already in use");
         }
         if(userRepository.existsByEmail(authRequest.getEmail())) {
-            throw new RuntimeException("Email is already in use");
+            throw new UserAlreadyExistsException("Email is already in use");
         }
         User user = User.builder()
                 .username(authRequest.getUsername())
