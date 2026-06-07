@@ -34,4 +34,21 @@ public class TransactionService {
         dto.setType(transaction.getType());
         return dto;
     }
+
+    public TransactionDto createTransaction(String username, TransactionDto dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = Transaction.builder()
+                .amount(dto.getAmount())
+                .description(dto.getDescription())
+                .type(dto.getType())
+                .date(dto.getDate())
+                .user(user)
+                .build();
+
+        Transaction savedTransaction = transactionRepository.save(transaction);
+
+        return toDto(savedTransaction);
+    }
 }
