@@ -31,4 +31,35 @@ public class TransactionController {
         TransactionDto createdTransaction = transactionService.createTransaction(username, dto);
         return ResponseEntity.ok(createdTransaction);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TransactionDto> getTransactionById(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        String username = authentication.getName();
+        TransactionDto transaction = transactionService.getTransactionById(username, id);
+        return ResponseEntity.ok(transaction);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTransactionById(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        String username = authentication.getName();
+        transactionService.deleteTransaction(username, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TransactionDto> updateTransactionById(
+            Authentication authentication,
+            @PathVariable Long id,
+            @RequestBody TransactionDto dto
+    ) {
+        String username = authentication.getName();
+        TransactionDto updatedTransaction = transactionService.updateTransaction(username, id, dto);
+        return ResponseEntity.ok(updatedTransaction);
+    }
 }

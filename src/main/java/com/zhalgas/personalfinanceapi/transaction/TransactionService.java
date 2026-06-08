@@ -51,4 +51,40 @@ public class TransactionService {
 
         return toDto(savedTransaction);
     }
+
+    public TransactionDto getTransactionById(String username, Long transactionId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        return toDto(transaction);
+    }
+
+    public void deleteTransaction(String username, Long transactionId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        transactionRepository.delete(transaction);
+    }
+    public TransactionDto updateTransaction(String username, Long transactionId, TransactionDto dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        transaction.setAmount(dto.getAmount());
+        transaction.setDate(dto.getDate());
+        transaction.setDescription(dto.getDescription());
+        transaction.setType(dto.getType());
+
+        Transaction updatedTransaction = transactionRepository.save(transaction);
+
+        return toDto(updatedTransaction);
+    }
 }
