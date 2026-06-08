@@ -1,5 +1,7 @@
 package com.zhalgas.personalfinanceapi.transaction;
 
+import com.zhalgas.personalfinanceapi.exception.TransactionNotFoundException;
+import com.zhalgas.personalfinanceapi.exception.UserNotFoundException;
 import com.zhalgas.personalfinanceapi.user.User;
 import com.zhalgas.personalfinanceapi.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +16,17 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
-    public List<TransactionDto> getTransactionsByUsername(String username) {
+    public List<TransactionDto> getTransactionsByUsername(String username, TransactionType type) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-       List<Transaction> transactions = transactionRepository.findByUserId(user.getId());
+//       List<Transaction> transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
+        List<Transaction> transactions;
+        if(type == null) {
+            transactions = transactionRepository.findByUserId(user.getId());
+        } else {
+            transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
+        }
 
        return transactions.stream()
                .map(this::toDto)
@@ -37,7 +45,7 @@ public class TransactionService {
 
     public TransactionDto createTransaction(String username, TransactionDto dto) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Transaction transaction = Transaction.builder()
                 .amount(dto.getAmount())
@@ -54,29 +62,29 @@ public class TransactionService {
 
     public TransactionDto getTransactionById(String username, Long transactionId) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
 
         return toDto(transaction);
     }
 
     public void deleteTransaction(String username, Long transactionId) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
 
         transactionRepository.delete(transaction);
     }
     public TransactionDto updateTransaction(String username, Long transactionId, TransactionDto dto) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new TransactionNotFoundException("Transaction not found"));
 
         transaction.setAmount(dto.getAmount());
         transaction.setDate(dto.getDate());
@@ -87,4 +95,16 @@ public class TransactionService {
 
         return toDto(updatedTransaction);
     }
+
+//    public List<TransactionDto> getTransactionsByType(String username, TransactionType type) {
+//        User user  = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new UserNotFoundException("User not found"));
+//
+//        List<Transaction> transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
+//
+//        return transactions.stream()
+//                .map(this::toDto)
+//                .toList();
+//    }
+
 }

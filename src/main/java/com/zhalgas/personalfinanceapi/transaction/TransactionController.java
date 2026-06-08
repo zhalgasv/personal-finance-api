@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -16,16 +17,19 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public ResponseEntity<List<TransactionDto>> getMyTransactions(Authentication authentication) {
+    public ResponseEntity<List<TransactionDto>> getMyTransactions(
+            Authentication authentication,
+            @RequestParam(required = false) TransactionType type
+            ) {
         String username = authentication.getName();
-        List<TransactionDto> transactions = transactionService.getTransactionsByUsername(username);
+        List<TransactionDto> transactions = transactionService.getTransactionsByUsername(username, type);
         return ResponseEntity.ok(transactions);
     }
 
     @PostMapping
     public ResponseEntity<TransactionDto> createTransaction(
             Authentication authentication,
-            @RequestBody TransactionDto dto
+            @RequestBody @Valid TransactionDto dto
     ) {
         String username = authentication.getName();
         TransactionDto createdTransaction = transactionService.createTransaction(username, dto);
@@ -56,7 +60,7 @@ public class TransactionController {
     public ResponseEntity<TransactionDto> updateTransactionById(
             Authentication authentication,
             @PathVariable Long id,
-            @RequestBody TransactionDto dto
+            @RequestBody @Valid TransactionDto dto
     ) {
         String username = authentication.getName();
         TransactionDto updatedTransaction = transactionService.updateTransaction(username, id, dto);
