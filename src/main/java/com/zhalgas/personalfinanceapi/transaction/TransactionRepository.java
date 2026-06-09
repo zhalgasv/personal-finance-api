@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
-    List<Transaction> findByUserId(Long userId);
+    List<Transaction> findByUserIdOrderByDateDesc(Long userId);
 
     Optional<Transaction> findByIdAndUserId(Long transactionId, Long userId);
 
-    List<Transaction> findByUserIdAndType(Long userId, TransactionType type);
+    List<Transaction> findByUserIdAndTypeOrderByDateDesc(Long userId, TransactionType type);
 }

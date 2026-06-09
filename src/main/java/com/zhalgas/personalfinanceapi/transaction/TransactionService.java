@@ -7,6 +7,7 @@ import com.zhalgas.personalfinanceapi.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -20,12 +21,11 @@ public class TransactionService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-//       List<Transaction> transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
         List<Transaction> transactions;
         if(type == null) {
-            transactions = transactionRepository.findByUserId(user.getId());
+            transactions = transactionRepository.findByUserIdOrderByDateDesc(user.getId());
         } else {
-            transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
+            transactions = transactionRepository.findByUserIdAndTypeOrderByDateDesc(user.getId(), type);
         }
 
        return transactions.stream()
@@ -79,6 +79,7 @@ public class TransactionService {
 
         transactionRepository.delete(transaction);
     }
+
     public TransactionDto updateTransaction(String username, Long transactionId, TransactionDto dto) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -96,15 +97,25 @@ public class TransactionService {
         return toDto(updatedTransaction);
     }
 
-//    public List<TransactionDto> getTransactionsByType(String username, TransactionType type) {
-//        User user  = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new UserNotFoundException("User not found"));
-//
-//        List<Transaction> transactions = transactionRepository.findByUserIdAndType(user.getId(), type);
-//
-//        return transactions.stream()
-//                .map(this::toDto)
-//                .toList();
-//    }
+    public BalanceDto getBalance(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        List<Transaction> transactions = transactionRepository.findByUserIdOrderByDateDesc(user.getId());
+
+        BigDecimal income = BigDecimal.ZERO;
+        BigDecimal expense = BigDecimal.ZERO;
+
+        for(Transaction transaction : transactions) {
+            if(transaction.getType() == TransactionType.INCOME) {
+                income = income.add(transaction.getAmount());
+            } else if(transaction.getType() == TransactionType.EXPENSE) {
+                expense = expense.add(transaction.getAmount());
+            }
+        }
+
+        BigDecimal balance = income.subtract(expense);
+
+        return new BalanceDto(income, expense, balance);
+    }
 }

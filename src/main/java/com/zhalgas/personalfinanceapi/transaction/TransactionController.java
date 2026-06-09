@@ -66,4 +66,13 @@ public class TransactionController {
         TransactionDto updatedTransaction = transactionService.updateTransaction(username, id, dto);
         return ResponseEntity.ok(updatedTransaction);
     }
+
+    @GetMapping("/balance")
+    public ResponseEntity<BalanceDto> getBalance(
+            Authentication authentication
+    ) {
+        String username = authentication.getName();
+        BalanceDto balance = transactionService.getBalance(username);
+        return ResponseEntity.ok(balance);
+    }
 }
