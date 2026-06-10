@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -19,10 +20,12 @@ public class TransactionController {
     @GetMapping
     public ResponseEntity<List<TransactionDto>> getMyTransactions(
             Authentication authentication,
-            @RequestParam(required = false) TransactionType type
+            @RequestParam(required = false) TransactionType type,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to
             ) {
         String username = authentication.getName();
-        List<TransactionDto> transactions = transactionService.getTransactionsByUsername(username, type);
+        List<TransactionDto> transactions = transactionService.getTransactionsByUsername(username, type, from, to);
         return ResponseEntity.ok(transactions);
     }
 
