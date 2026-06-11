@@ -29,7 +29,6 @@ REST API for personal finance management built with Spring Boot 3.
 - [ ] Budget tracking
 - [ ] Pagination
 
-
 ## Getting Started
 
 Start PostgreSQL:
@@ -179,6 +178,29 @@ Run all tests:
 
 ```bash
 ./mvnw test
+```
+
+## Manual API Check
+
+The API was manually tested with curl:
+
+- User registration
+- User login and JWT token generation
+- Creating income and expense transactions
+- Getting all transactions
+- Filtering transactions by type
+- Updating a transaction
+- Deleting a transaction
+- Balance calculation after create, update, and delete operations
+
+Example balance response after creating one income transaction:
+
+```json
+{
+  "income": 5000.00,
+  "expense": 0,
+  "balance": 5000.00
+}
 ```
 
 ## Notes
