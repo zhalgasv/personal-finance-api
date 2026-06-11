@@ -23,10 +23,12 @@ REST API for personal finance management built with Spring Boot 3.
 - [x] Balance summary
 - [x] Validation and global exception handling
 - [x] Swagger UI documentation
+- [x] Service tests
+- [ ] Controller tests
 - [ ] Category management
 - [ ] Budget tracking
 - [ ] Pagination
-- [ ] Service and controller tests
+
 
 ## Getting Started
 
@@ -169,6 +171,14 @@ Example balance response:
   "expense": 1200,
   "balance": 3800
 }
+```
+
+## Tests
+
+Run all tests:
+
+```bash
+./mvnw test
 ```
 
 ## Notes

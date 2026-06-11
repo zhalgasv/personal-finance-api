@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,10 +18,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -155,9 +153,9 @@ class TransactionServiceTest {
         assertThrows(TransactionNotFoundException.class, () ->
                 transactionService.deleteTransaction("adil", 1L));
 
-       verify(userRepository).findByUsername("adil");
-       verify(transactionRepository).findByIdAndUserId(1L, 1L);
-       verify(transactionRepository, never()).delete(any(Transaction.class));
+        verify(userRepository).findByUsername("adil");
+        verify(transactionRepository).findByIdAndUserId(1L, 1L);
+        verify(transactionRepository, never()).delete(any(Transaction.class));
     }
 
     @Test
@@ -190,7 +188,6 @@ class TransactionServiceTest {
 
     @Test
     void createTransaction_shouldThrowExceptionWhenUserNotFound() {
-
         TransactionDto dto = new TransactionDto();
         dto.setDescription("Groceries");
         dto.setType(TransactionType.EXPENSE);
@@ -208,7 +205,6 @@ class TransactionServiceTest {
 
     @Test
     void updateTransaction_shouldUpdateTransactionWhenExists() {
-
         User user = User.builder()
                 .id(1L)
                 .username("adil")
@@ -245,8 +241,8 @@ class TransactionServiceTest {
         assertEquals(LocalDate.now(), result.getDate());
 
         verify(userRepository).findByUsername("adil");
-        verify(transactionRepository).save(any(Transaction.class));
         verify(transactionRepository).findByIdAndUserId(1L, 1L);
+        verify(transactionRepository).save(any(Transaction.class));
     }
 
     @Test
@@ -319,5 +315,117 @@ class TransactionServiceTest {
 
         verify(userRepository).findByUsername("adil");
         verify(transactionRepository).findByUserIdOrderByDateDesc(1L);
+    }
+
+    @Test
+    void getTransactionsByUsername_shouldFilterByType() {
+        User user = User.builder()
+                .id(1L)
+                .username("adil")
+                .build();
+
+        Transaction expense = Transaction.builder()
+                .id(2L)
+                .amount(new BigDecimal("150"))
+                .description("Groceries")
+                .type(TransactionType.EXPENSE)
+                .date(LocalDate.now().minusDays(2))
+                .user(user)
+                .build();
+
+        when(userRepository.findByUsername("adil"))
+                .thenReturn(Optional.of(user));
+
+        when(transactionRepository.findByUserIdAndTypeOrderByDateDesc(1L, TransactionType.EXPENSE))
+                .thenReturn(List.of(expense));
+
+        List<TransactionDto> result = transactionService.getTransactionsByUsername("adil", TransactionType.EXPENSE, null, null);
+
+        assertEquals(1, result.size());
+        assertEquals(TransactionType.EXPENSE, result.get(0).getType());
+        assertEquals("Groceries", result.get(0).getDescription());
+
+        verify(userRepository).findByUsername("adil");
+        verify(transactionRepository).findByUserIdAndTypeOrderByDateDesc(1L, TransactionType.EXPENSE);
+    }
+
+    @Test
+    void getTransactionsByUsername_shouldFilterByDateRange() {
+        User user = User.builder()
+                .id(1L)
+                .username("adil")
+                .build();
+
+        Transaction transaction1 = Transaction.builder()
+                .id(1L)
+                .amount(new BigDecimal("5000"))
+                .description("Salary")
+                .type(TransactionType.INCOME)
+                .date(LocalDate.now().minusDays(5))
+                .user(user)
+                .build();
+
+        LocalDate from = LocalDate.now().minusDays(7);
+        LocalDate to = LocalDate.now();
+
+        when(userRepository.findByUsername("adil"))
+                .thenReturn(Optional.of(user));
+
+        when(transactionRepository.findByUserIdAndDateBetweenOrderByDateDesc(1L, from, to))
+                .thenReturn(List.of(transaction1));
+
+        List<TransactionDto> result = transactionService.getTransactionsByUsername("adil", null, from, to);
+
+        assertEquals(1, result.size());
+        assertEquals(TransactionType.INCOME, result.get(0).getType());
+        assertEquals("Salary", result.get(0).getDescription());
+
+        verify(userRepository).findByUsername("adil");
+        verify(transactionRepository).findByUserIdAndDateBetweenOrderByDateDesc(1L, from, to);
+    }
+
+    @Test
+    void getTransactionsByUsername_shouldFilterByTypeAndDateRange() {
+        User user = User.builder()
+                .id(1L)
+                .username("adil")
+                .build();
+
+        Transaction expense = Transaction.builder()
+                .id(2L)
+                .amount(new BigDecimal("150"))
+                .description("Groceries")
+                .type(TransactionType.EXPENSE)
+                .date(LocalDate.now().minusDays(2))
+                .user(user)
+                .build();
+
+        LocalDate from = LocalDate.now().minusDays(7);
+        LocalDate to = LocalDate.now();
+
+        when(userRepository.findByUsername("adil"))
+                .thenReturn(Optional.of(user));
+
+        when(transactionRepository.findByUserIdAndTypeAndDateBetweenOrderByDateDesc(1L, TransactionType.EXPENSE, from, to))
+                .thenReturn(List.of(expense));
+
+        List<TransactionDto> result = transactionService.getTransactionsByUsername("adil", TransactionType.EXPENSE, from, to);
+
+        assertEquals(1, result.size());
+        assertEquals(TransactionType.EXPENSE, result.get(0).getType());
+        assertEquals("Groceries", result.get(0).getDescription());
+        verify(userRepository).findByUsername("adil");
+        verify(transactionRepository).findByUserIdAndTypeAndDateBetweenOrderByDateDesc(1L, TransactionType.EXPENSE, from, to);
+    }
+
+    @Test
+    void getTransactionsByUsername_shouldThrowExceptionWhenUserNotFound() {
+        when(userRepository.findByUsername("adil"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(UserNotFoundException.class, () ->
+                transactionService.getTransactionsByUsername("adil", null, null, null));
+
+        verify(transactionRepository, never()).findByUserIdOrderByDateDesc(anyLong());
     }
 }
