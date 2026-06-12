@@ -24,7 +24,7 @@ REST API for personal finance management built with Spring Boot 3.
 - [x] Validation and global exception handling
 - [x] Swagger UI documentation
 - [x] Service tests
-- [ ] Controller tests
+- [x] Controller tests
 - [ ] Category management
 - [ ] Budget tracking
 - [ ] Pagination
