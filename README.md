@@ -29,7 +29,20 @@ REST API for personal finance management built with Spring Boot 3.
 - [ ] Budget tracking
 - [ ] Pagination
 
-## Getting Started
+## Architecture
+
+The application follows a layered Spring Boot architecture:
+
+- `auth`: registration, login, JWT generation, and authentication filtering
+- `transaction`: transaction CRUD, filtering, and balance calculation
+- `user`: user entity and persistence
+- `config`: Spring Security and Swagger/OpenAPI configuration
+- `exception`: centralized error handling for validation and business failures
+- DTO classes: request and response contracts used by API endpoints
+
+Each authenticated user can access only their own transaction data.
+
+## How to Run
 
 Start PostgreSQL:
 
@@ -61,7 +74,9 @@ OpenAPI JSON:
 http://127.0.0.1:8081/v3/api-docs
 ```
 
-## Authentication
+## API Examples
+
+### Authentication
 
 Register:
 
@@ -93,7 +108,7 @@ Use the token for protected endpoints:
 Authorization: Bearer <token>
 ```
 
-## Transaction API
+### Transaction API
 
 Create transaction:
 
